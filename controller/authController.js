@@ -7,11 +7,17 @@ const multer = require("multer");
 
 
 const registerUser = async (req, res) => {
-    const { firstName, lastName, email, password, number } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    if (!firstName || !lastName || !email || !password) {
+    const { firstName, lastName, email, password, number,role } = req.body;
+    //if 
+    if (!firstName || !lastName || !email || !password ||!role) {
         return res.status(400).json({ message: "All fields are required" });
       }
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(409).json({ message: "User already exists" });
+      }
+      const hashedPassword = await bcrypt.hash(password, 10);
+
     try {
         const newUser = new User({
             firstName,
@@ -19,6 +25,7 @@ const registerUser = async (req, res) => {
             email,
             password: hashedPassword,
             number,
+            role,
         });
         await newUser.save();
         res.status(201).json({ message: "User Registered Successfully" });
@@ -37,9 +44,9 @@ const loginUser = async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) return res.status(400).json({ message: "Invalid credentials" });
 
-        const token = jwt.sign({ id: user._id }, "secretKey", { expiresIn: "1h" });
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
-        res.status(200).json({ message: "Login successful", token });
+        res.status(200).json({ message: "Login successful", token,role:user.role, });
     } catch (error) {
         console.log("Error During login: ", error);
         res.status(500).json({ message: "Internal Server Error" });
@@ -76,31 +83,7 @@ const fetchUser = async (req, res) => {
     }
   };
   
-//   const updateProfile = async (req, res) => {
-//     try {
-//       console.log("recieved form data",req.body)
-//       console.log("recieved files",req.files)
-//         const userId = req.user.id; // 🛑 Logged-in user ka ID le rahe hain (Middleware se aayega)
-
-//         const { name, education, location, mobile, availability, gender } = req.body; // 🔹 Frontend se aaya hua data
-
-//         const updateData = { name, education, location, mobile, availability, gender };
-
-//         // 🖼️ Agar koi file (Resume ya Profile Photo) upload hui hai to use bhi save karna hai
-//         if (req.files) {
-//             if (req.files.resume) updateData.resume = req.files.resume[0].path;
-//             if (req.files.profilePhoto) updateData.profilePhoto = req.files.profilePhoto[0].path;
-//         }
-
-//         // 📌 MongoDB me user ka data update kar rahe hain
-//         const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true }).select("-password");
-
-//         res.status(200).json({ success: true, message: "Profile updated successfully", data: updatedUser });
-//     } catch (error) {
-//         console.error("Error updating profile:", error);
-//         res.status(500).json({ success: false, message: "Profile update failed", error: error.message });
-//     }
-// };
+   
 
 const updateProfile = async (req, res) => {
   try {
@@ -144,8 +127,6 @@ const updateProfile = async (req, res) => {
 };
 
 
-
-  
 
 
 

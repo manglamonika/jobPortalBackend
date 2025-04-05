@@ -6,8 +6,10 @@ const userSchema=new mongoose.Schema({
     email:{type:String , require:true , unique:true},
     password:{type:String , require:true},
     number:{type:String , require:true},
+  role:{type:String,enum:["seeker","poster"],default:"seeker"},
 
 
+  //job seeker field
     bio:{type:String , require:true},
     education:{type:String , require:true},
     location:{type:String , require:true},
@@ -17,6 +19,10 @@ const userSchema=new mongoose.Schema({
     resume:{type:String , require:true},
     // email:{type:String , require:true},
     profilePhoto:{type:String , require:true},
+
+
+
+  
 }, {timestamps:true})
 
 const User=mongoose.model('user',userSchema);

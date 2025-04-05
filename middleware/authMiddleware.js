@@ -1,39 +1,33 @@
-// const jwt = require("jsonwebtoken");
-
-// const authMiddleware = (req, res, next) => {
-//   const token = req.header("Authorization")?.split(" ")[1]; // ✅ Bearer Token
-
-//   if (!token) {
-//     return res.status(401).json({ message: "Access Denied! No token provided." });
-//   }
-
-//   try {
-//     const decoded = jwt.verify(token, "SECRET_KEY"); // ✅ Token verify kro
-//     req.user = decoded; // ✅ User ka ID mil jayega
-//     next();
-//   } catch (error) {
-//     res.status(401).json({ message: "Invalid Token!" });
-//   }
-// };
-
-// module.exports = authMiddleware;
-
-// middleware/authMiddleware.js
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
+
+console.log("🔥 Loaded JWT Secret Key:", process.env.JWT_SECRET); // ✅ Debug Secret Key
 
 const authenticateToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
+  const authHeader = req.headers.authorization;
+  console.log("🔥 Received Header:", authHeader); // ✅ Check header in backend
+
+  if (!authHeader) {
+    console.log("❌ No Authorization Header Found");
+    return res.status(403).json({ message: "Access denied, no token provided (Header missing)" });
+  }
+
+  const token = authHeader.split(" ")[1];
+  console.log("🔥 Extracted Token:", token); // ✅ Check token value
 
   if (!token) {
-    return res.status(403).json({ message: "Access denied, no token provided" });
+    console.log("❌ Token is missing in header");
+    return res.status(403).json({ message: "Access denied, no token found in header" });
   }
 
   try {
-    const decoded = jwt.verify(token, "secretKey");
-    req.user = decoded; // Attach user info to the request
+    console.log("🔥 Using Secret Key for Verification:", process.env.JWT_SECRET); // ✅ Debugging Key
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("✅ Authenticated User:", decoded);
+    req.user = decoded;
     next();
   } catch (error) {
-    console.error("Auth Middleware Error:", error.message);
+    console.error("❌ JWT Verification Failed:", error.message);
     res.status(401).json({ message: "Invalid or expired token" });
   }
 };

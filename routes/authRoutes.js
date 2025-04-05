@@ -1,25 +1,3 @@
-// const express = require("express");
-// const { registerUser, loginUser ,fetchUser} = require("../controller/authController");
-// const authMiddleware = require("../middlewares/authMiddleware");
-// const User = require("../models/userSchema");
-// const router = express.Router();
-
-// router.post("/register", registerUser);
-// router.post("/login", loginUser);
-// router.post("/users",authMiddleware, fetchUser);
-
-// module.exports = router;
-
-// const express = require('express')
-// const {registerUser, loginUser, fetchUser, fetchLoggedInUser}= require("../controller/authController")
-// const authenticateToken = require("../middleware/authMiddleware");
-
-// const router = express.Router()
-
-// router.post('/signup',registerUser)
-// router.post('/login',loginUser)
-// router.get('/users', fetchUser)
-// router.get('/me', authenticateToken, fetchLoggedInUser);
 
 
 
@@ -28,6 +6,8 @@
 const express = require('express');
 const { registerUser, loginUser, fetchUser, fetchLoggedInUser, updateProfile } = require("../controller/authController");
 const authenticateToken = require("../middleware/authMiddleware");
+const { createJobPoster ,getJobPosterProfile } = require("../controller/jobPosterController");
+
 const multer = require("multer");
 
 const router = express.Router();
@@ -43,11 +23,17 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-
+//authentication routes
 router.post('/signup', registerUser);
 router.post('/login', loginUser);
+
+//user routes
 router.get('/users', fetchUser);
 router.get('/me', authenticateToken, fetchLoggedInUser);
+
+//updateProfile route
 router.put('/profile', authenticateToken, upload.fields([{ name: "resume" }, { name: "profilePhoto" }]), updateProfile);
 
+router.post("/jobPoster", createJobPoster);
+router.get('/jobPoster', getJobPosterProfile); // Protecting the route
 module.exports = router;
